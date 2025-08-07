@@ -1,37 +1,38 @@
-// src/App.jsx
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./components/login/Login";
-import Layout from "./components/layout/Layout";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Login from "./components/Login/Login";
 import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Users from "./pages/Users";
+import Product from "./pages/Products";      // <-- Qo‘shildi
+import Users from "./pages/Users";          // <-- Qo‘shildi
+import Layout from "./components/Layout/Layout";
 
 const App = () => {
-  const token = localStorage.getItem("token");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
+  }, [location]);
 
   return (
     <Routes>
-      {/* Root path redirect based on token */}
+      <Route
+        path="/login"
+        element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />}
+      />
       <Route
         path="/"
-        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+        element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}
+      >
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="products" element={<Product />} />  {/* Qo‘shildi */}
+        <Route path="users" element={<Users />} />       {/* Qo‘shildi */}
+      </Route>
+      <Route
+        path="*"
+        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
       />
-
-      {/* Login page */}
-      <Route path="/login" element={<Login />} />
-
-      {/* Protected layout routes */}
-      {token && (
-        <Route path="/" element={<Layout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="products" element={<Products />} />
-          <Route path="users" element={<Users />} />
-        </Route>
-      )}
-
-      {/* Fallback for unmatched routes */}
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
