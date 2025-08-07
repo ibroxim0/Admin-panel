@@ -22,16 +22,34 @@ const Login = () => {
     }, 3000);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username === "12345" && password === "12345") {
+
+    try {
+      const response = await fetch("https://dummyjson.com/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Неверные данные. Попробуйте снова.");
+      }
+
+      const data = await response.json();
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
+
       showNotification("Вход выполнен!", "success");
+
       setTimeout(() => {
-        localStorage.setItem("token", "fake-admin-token");
         navigate("/dashboard");
       }, 1500);
-    } else {
-      showNotification("Неверные данные. Попробуйте снова.", "error");
+    } catch (error) {
+      showNotification(error.message || "Ошибка входа", "error");
     }
   };
 

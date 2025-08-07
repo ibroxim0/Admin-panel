@@ -1,45 +1,38 @@
+// src/App.jsx
 import React from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
-import Layout from "./components/layout/Layout";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/login/Login";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import Dashboard from "./pages/Dashboard.jsx";
-import Products from "./pages/Products.jsx";
-import Users from "./pages/Users.jsx";
+import Layout from "./components/layout/Layout";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Users from "./pages/Users";
 
 const App = () => {
   const token = localStorage.getItem("token");
 
   return (
-    <>
-      <ToastContainer />
-      <Routes>
-        {/* Login har doim mavjud, token bo‘lsa ham */}
-        <Route path="/login" element={<Login />} />
+    <Routes>
+      {/* Root path redirect based on token */}
+      <Route
+        path="/"
+        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+      />
 
-        {/* Token mavjud bo‘lsa, Layout ichidagi sahifalar ishlaydi */}
-        <Route
-          path="/"
-          element={
-            token ? <Layout /> : <Navigate to="/login" replace />
-          }
-        >
-          <Route index element={<Navigate to="dashboard" replace />} />
+      {/* Login page */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Protected layout routes */}
+      {token && (
+        <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="users" element={<Users />} />
         </Route>
+      )}
 
-        {/* Default: agar yo‘l notanish bo‘lsa login yoki dashboardga yo‘naltiramiz */}
-        <Route
-          path="*"
-          element={
-            token ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />
-          }
-        />
-      </Routes>
-    </>
+      {/* Fallback for unmatched routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
